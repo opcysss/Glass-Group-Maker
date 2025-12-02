@@ -15,20 +15,31 @@
             font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 0;
-            /* 배경을 조금 더 어둡고 진한 보라색 계열로 변경 */
+            /* 배경 그라데이션 고정 */
             background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow-x: hidden; /* 가로 스크롤 방지 */
         }
 
-        /* Moving Background Shapes - 색상 조정 */
+        /* 배경 도형 컨테이너: 화면에 고정(fixed)시켜서 스크롤에 영향 없도록 함 */
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
         .shape {
             position: absolute;
             filter: blur(50px);
-            z-index: -1;
+            opacity: 0.7;
             animation: move 10s infinite alternate;
-            opacity: 0.7; /* 배경 쉐이프가 너무 튀지 않게 투명도 조절 */
         }
+        
         .shape-1 {
             top: -10%;
             left: -10%;
@@ -76,9 +87,11 @@
     </style>
 </head>
 <body>
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
     
     <div id="root"></div>
 
@@ -167,11 +180,12 @@
 
             return (
                 <div className="min-h-screen flex items-center justify-center p-4">
+                    {/* 모바일 정렬 이슈 해결: w-full 추가 */}
                     <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-6">
                         
                         {/* Left Panel: Inputs */}
-                        {/* 배경을 어두운 남보라색 유리로 변경하여 흰색 글씨 가독성 확보 */}
-                        <div className="flex-1 bg-indigo-950 bg-opacity-40 backdrop-filter backdrop-blur-xl border border-white border-opacity-20 rounded-3xl p-6 shadow-2xl text-white">
+                        {/* w-full 추가하여 모바일에서 꽉 차게 */}
+                        <div className="w-full lg:flex-1 bg-indigo-950 bg-opacity-40 backdrop-filter backdrop-blur-xl border border-white border-opacity-20 rounded-3xl p-6 shadow-2xl text-white">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-3 bg-white bg-opacity-10 rounded-full">
                                     <UsersIcon />
@@ -236,7 +250,16 @@
                         </div>
 
                         {/* Right Panel: Results */}
-                        <div className={`flex-1 flex flex-col transition-all duration-500 ${groups.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-50 translate-x-4 lg:translate-x-0 lg:opacity-100'}`}>
+                        {/* 모바일 정렬 수정:
+                            1. w-full 추가 (모바일에서 꽉 차게)
+                            2. translate-x 애니메이션 제거 (모바일에서 오른쪽으로 튀어나가던 문제 해결)
+                            3. translate-y를 사용하여 아래에서 위로 살짝 올라오는 효과로 변경
+                        */}
+                        <div className={`w-full lg:flex-1 flex flex-col transition-all duration-500 
+                            ${groups.length > 0 
+                                ? 'opacity-100 translate-y-0' 
+                                : 'opacity-50 translate-y-4 lg:translate-y-0 lg:opacity-100'
+                            }`}>
                             
                             {/* Result Header */}
                             <div className="bg-indigo-950 bg-opacity-40 backdrop-filter backdrop-blur-xl border border-white border-opacity-20 rounded-3xl p-6 shadow-2xl h-full overflow-hidden flex flex-col">
@@ -259,7 +282,7 @@
                                 {/* Groups Grid */}
                                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                                     {groups.length === 0 ? (
-                                        <div className="h-full flex flex-col items-center justify-center text-white/60 border-2 border-dashed border-white/10 rounded-2xl p-8">
+                                        <div className="h-full flex flex-col items-center justify-center text-white/60 border-2 border-dashed border-white/10 rounded-2xl p-8 min-h-[200px]">
                                             <UsersIcon size={48} className="mb-4 opacity-70" />
                                             <p className="text-center font-medium">왼쪽에서 인원을 입력하고<br/>조 편성 버튼을 눌러주세요</p>
                                         </div>
