@@ -103,7 +103,7 @@
 
         const App = () => {
             const [names, setNames] = useState('');
-            const [groupSize, setGroupSize] = useState(4); // 초기값 4
+            const [groupSize, setGroupSize] = useState('4'); // 문자열로 관리하여 빈 값 허용
             const [groups, setGroups] = useState([]);
             const [isShuffling, setIsShuffling] = useState(false);
             const [copied, setCopied] = useState(false);
@@ -124,7 +124,7 @@
                     return;
                 }
 
-                // [수정됨] 실행 시에 숫자가 비어있거나 1보다 작으면 1로 처리
+                // 실행 시점에 숫자로 변환 (없으면 1로 처리)
                 const size = parseInt(groupSize) > 0 ? parseInt(groupSize) : 1;
 
                 setIsShuffling(true);
@@ -140,7 +140,6 @@
 
                     const shuffledNames = shuffleArray([...nameList]);
                     const resultGroups = [];
-                    // [수정됨] 여기서 state인 groupSize 대신 안전하게 변환된 size 변수 사용
                     for (let i = 0; i < shuffledNames.length; i += size) {
                         resultGroups.push(shuffledNames.slice(i, i + size));
                     }
@@ -174,6 +173,15 @@
                 if(confirm('모든 내용을 초기화 하시겠습니까?')) {
                     setNames('');
                     setGroups([]);
+                }
+            };
+
+            // 숫자만 입력받도록 처리하는 함수
+            const handleNumberInput = (e) => {
+                const value = e.target.value;
+                // 숫자이거나 빈 문자열일 때만 상태 업데이트
+                if (value === '' || /^[0-9]+$/.test(value)) {
+                    setGroupSize(value);
                 }
             };
 
@@ -214,13 +222,18 @@
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-white/90">한 조당 인원 수</label>
                                     <div className="relative">
+                                        {/* 모바일 이슈 해결의 핵심:
+                                            type="text"로 설정하여 브라우저의 자동 숫자 보정(1로 되돌아가는 현상)을 막음.
+                                            inputMode="numeric"으로 모바일에서 숫자 키패드가 뜨게 함.
+                                        */}
                                         <input 
-                                            type="number" 
-                                            min="1" 
+                                            type="text" 
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
                                             className="w-full bg-black bg-opacity-20 border border-white border-opacity-20 rounded-xl p-4 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-white/50"
                                             value={groupSize}
-                                            /* [수정됨] 빈 값 입력을 허용하여 삭제가 가능하도록 변경 */
-                                            onChange={(e) => setGroupSize(e.target.value)}
+                                            onChange={handleNumberInput}
+                                            placeholder="인원 수 입력"
                                         />
                                         <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/80">명씩 묶기</span>
                                     </div>
